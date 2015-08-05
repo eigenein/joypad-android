@@ -5,13 +5,16 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Picture;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -26,44 +29,50 @@ public class JoypadView extends View {
     public interface Listener {
 
         void onUp();
+
+        /**
+         * @param distance distance from the center. Varies from 0 up to 1.
+         * @param dx horizontal offset. Varies from -1 up to 1.
+         * @param dy vertical offset. Varies from -1 up to 1.
+         */
         void onMove(final float distance, final float dx, final float dy);
     }
 
-    private static final float SIN_30 = (float)Math.sin(Math.PI / 6.0);
+    private static final float SIN_30 = 0.5f;
 
     /**
      * Pre-computed cos and sin for rotation.
      */
     private static final PointF[] ROTATION = {
-            new PointF(1f, 0f),
-            new PointF((float)Math.cos(0.25 * Math.PI), (float)Math.sin(0.25 * Math.PI)),
-            new PointF(0f, 1f),
-            new PointF((float)Math.cos(0.75 * Math.PI), (float)Math.sin(0.75 * Math.PI)),
-            new PointF(-1f, 0f),
-            new PointF((float)Math.cos(1.25 * Math.PI), (float)Math.sin(1.25 * Math.PI)),
-            new PointF(0f, -1f),
-            new PointF((float)Math.cos(1.75 * Math.PI), (float)Math.sin(1.75 * Math.PI)),
+            new PointF(+1f, +0f),
+            new PointF(+0f, +1f),
+            new PointF(-1f, +0f),
+            new PointF(+0f, -1f),
+            new PointF(+0.70710678f, +0.70710678f),
+            new PointF(-0.70710678f, +0.70710678f),
+            new PointF(-0.70710678f, -0.70710678f),
+            new PointF(+0.70710678f, -0.70710678f),
     };
 
     /**
      * Used to draw the outer circle.
      */
-    private final Paint outerPaint = new Paint();
+    private final Paint outerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     /**
      * Used to draw the inner circle.
      */
-    private final Paint innerPaint = new Paint();
+    private final Paint innerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     /**
      * Used to draw the moveable circle.
      */
-    private final Paint moveablePaint = new Paint();
+    private final Paint moveablePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     /**
      * Used to draw the direction triangles.
      */
-    private final Paint directionsPaint = new Paint();
+    private final Paint directionsPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     private final float innerRadius;
     private final float moveableRadius;
@@ -88,13 +97,17 @@ public class JoypadView extends View {
 
     private ValueAnimator moveableAnimator;
 
+    /**
+     * Caches drawing static elements.
+     */
+    private Bitmap cachedBitmap;
+
     public JoypadView(final Context context, final AttributeSet attrs) {
         super(context, attrs);
 
         final TypedArray array = context.getTheme().obtainStyledAttributes(attrs, R.styleable.JoypadView, 0, 0);
         final Resources resources = context.getResources();
 
-        outerPaint.setAntiAlias(true);
         outerPaint.setStyle(Paint.Style.STROKE);
         outerPaint.setColor(array.getColor(
                 R.styleable.JoypadView_outer_color,
@@ -105,21 +118,18 @@ public class JoypadView extends View {
                 resources.getDimensionPixelSize(R.dimen.joypad_outer_width)
         ));
 
-        innerPaint.setAntiAlias(true);
         innerPaint.setStyle(Paint.Style.FILL);
         innerPaint.setColor(array.getColor(
                 R.styleable.JoypadView_inner_color,
                 resources.getColor(R.color.joypad_grey_500)
         ));
 
-        moveablePaint.setAntiAlias(true);
         moveablePaint.setStyle(Paint.Style.FILL);
         moveablePaint.setColor(array.getColor(
                 R.styleable.JoypadView_moveable_color,
                 resources.getColor(R.color.joypad_grey_900)
         ));
 
-        directionsPaint.setAntiAlias(true);
         directionsPaint.setStyle(Paint.Style.FILL);
         directionsPaint.setColor(array.getColor(R.styleable.JoypadView_directions_color, resources.getColor(R.color.joypad_grey_300)));
 
@@ -198,31 +208,60 @@ public class JoypadView extends View {
 
     @Override
     protected void onSizeChanged(final int width, final int height, final int oldWidth, final int oldHeight) {
+        // Invalidate cache.
+        cachedBitmap = null;
+
         minSizeDimension = Math.min(width, height);
+        // Center X and Y values.
         centerPoint = minSizeDimension / 2f;
+        // Maximum moveable circle distance from the center.
         maxDistance = centerPoint - moveableRadius;
+        // Move the moveable circle to the center.
         moveablePoint = new PointF(centerPoint, centerPoint);
+        fireUp();
     }
 
     @Override
     protected void onDraw(@NonNull final Canvas canvas) {
         super.onDraw(canvas);
 
+        if ((cachedBitmap == null) || cachedBitmap.isRecycled()) {
+            cachedBitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+            drawStaticElements(new Canvas(cachedBitmap));
+        }
+        canvas.drawBitmap(cachedBitmap, 0f, 0f, null);
+        canvas.drawCircle(moveablePoint.x, moveablePoint.y, moveableRadius, moveablePaint);
+    }
+
+    /**
+     * Rotates the specified point around (0, 0).
+     */
+    private static PointF rotatePoint(final float x, final float y, final PointF rotation) {
+        return new PointF(x * rotation.x - y * rotation.y, x * rotation.y + y * rotation.x);
+    }
+
+    /**
+     * Draws static elements on the background picture in order to speed up {@see Joypad#onDraw}.
+     */
+    private void drawStaticElements(final Canvas canvas) {
         final float outerWidth = outerPaint.getStrokeWidth();
 
         // Draw outer arc.
         final float outerOffset = outerWidth / 2f;
-        @SuppressLint("DrawAllocation") final RectF outerRect = new RectF(
-                outerOffset, outerOffset, minSizeDimension - outerOffset, minSizeDimension - outerOffset);
-        canvas.drawArc(outerRect, 0.0f, 360f, false, outerPaint);
+        final RectF outerRect = new RectF(
+                outerOffset, outerOffset,
+                minSizeDimension - outerOffset, minSizeDimension - outerOffset
+        );
+        canvas.drawArc(outerRect, 0f, 360f, false, outerPaint);
 
         // Draw direction triangles.
-        final float triangleHeight = outerWidth / 2f;
-        final float offsetY = centerPoint - 3f * outerWidth / 4f;
-        final float offsetX = SIN_30 * outerWidth / 2f;
+        final float triangleHeight = 0.5f * outerWidth;
+        final float offsetY = centerPoint - 0.75f * outerWidth;
+        final float offsetX = SIN_30 * 0.5f * outerWidth;
+
         for (final PointF rotation : ROTATION) {
             // We'll rotate vertices of triangle.
-            @SuppressLint("DrawAllocation") final Path path = new Path();
+            final Path path = new Path();
             final PointF startPoint = rotatePoint(0f, offsetY + triangleHeight, rotation);
             path.moveTo(centerPoint + startPoint.x, centerPoint + startPoint.y);
             final PointF leftPoint = rotatePoint(-offsetX, offsetY, rotation);
@@ -236,16 +275,6 @@ public class JoypadView extends View {
 
         // Draw inner circle.
         canvas.drawCircle(centerPoint, centerPoint, innerRadius, innerPaint);
-
-        // Draw moveable.
-        canvas.drawCircle(moveablePoint.x, moveablePoint.y, moveableRadius, moveablePaint);
-    }
-
-    /**
-     * Rotates the specified point around (0, 0).
-     */
-    private static PointF rotatePoint(final float x, final float y, final PointF rotation) {
-        return new PointF(x * rotation.x - y * rotation.y, x * rotation.y + y * rotation.x);
     }
 
     /**
