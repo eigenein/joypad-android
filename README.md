@@ -8,6 +8,25 @@
 
 [![](https://developer.android.com/images/brand/en_generic_rgb_wo_60.png)](https://play.google.com/store/apps/details?id=ninja.eigenein.joypad.app)
 
+## Using with Gradle
+
+Add repository to `build.gradle`:
+
+```
+repositories {
+    // ...
+    maven { url "https://jitpack.io" }
+}
+```
+
+Add the dependency:
+
+```
+dependencies {
+    compile 'com.github.eigenein:joypad-android:0.2-2'
+}
+```
+
 ## Using `JoypadView`
 
 ```xml
