@@ -18,6 +18,7 @@ When user interacts with `Joypad` then `onUp` and `onMove` events are fired.
 ```java
 final JoypadView joypadView = (JoypadView)view.findViewById(R.id.joypad);
 joypadView.setListener(new JoypadView.Listener() {
+
     @Override
     public void onUp() {
         textView.setText(R.string.text_view_up);
