@@ -20,6 +20,13 @@ import android.view.View;
  */
 public class JoypadView extends View {
 
+    public interface Listener {
+
+        void onUp();
+
+        void onMove(final float distance, final float dx, final float dy);
+    }
+
     private static final float SIN_30 = (float)Math.sin(Math.PI / 6.0);
 
     /**
@@ -71,6 +78,8 @@ public class JoypadView extends View {
 
     private boolean animationCancelled = true;
 
+    private Listener listener;
+
     public JoypadView(final Context context, final AttributeSet attrs) {
         super(context, attrs);
 
@@ -108,11 +117,20 @@ public class JoypadView extends View {
         );
     }
 
+    public void setListener(final Listener listener) {
+        this.listener = listener;
+    }
+
     @Override
     public boolean onTouchEvent(@NonNull final MotionEvent event) {
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_UP:
+                // Fire event.
+                if (listener != null) {
+                    listener.onUp();
+                }
+
                 // Animate moving back to the center.
                 final float oldMoveableX = moveableX;
                 final float oldMoveableY = moveableY;
@@ -148,10 +166,18 @@ public class JoypadView extends View {
                     // Touched inside the outer circle.
                     moveableX = event.getX();
                     moveableY = event.getY();
+                    // Fire event.
+                    if (listener != null) {
+                        listener.onMove(distance / maxDistance, offsetX / maxDistance, offsetY / maxDistance);
+                    }
                 } else {
                     // Touched outside the outer circle.
                     moveableX = minSizeDimension / 2f + maxDistance * offsetX / distance;
                     moveableY = minSizeDimension / 2f + maxDistance * offsetY / distance;
+                    // Fire event.
+                    if (listener != null) {
+                        listener.onMove(1f, offsetX / distance, offsetY / distance);
+                    }
                 }
 
                 postInvalidate();
