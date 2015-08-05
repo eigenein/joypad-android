@@ -1,12 +1,8 @@
-# Joypad View for Android
+# Joypad View for Android [![](https://img.shields.io/github/release/eigenein/joypad-android.svg?label=JitPack)](https://jitpack.io/#eigenein/joypad-android/)
 
-[![](https://img.shields.io/github/release/eigenein/joypad-android.svg?label=JitPack)](https://jitpack.io/#eigenein/joypad-android/)
-
-TODO
+`Joypad` view simulates a Joystick for interactive applications.
 
 ## Using `JoypadView`
-
-Basic usage is pretty simple:
 
 ```xml
 <ninja.eigenein.joypad.JoypadView
@@ -15,7 +11,26 @@ Basic usage is pretty simple:
     android:layout_height="200dp"/>
 ```
 
-You can configure inner circle color, outer circle color, moveable circle color and triangles color:
+When user interacts with `Joypad` then `onUp` and `onMove` events are fired.
+
+```java
+final JoypadView joypadView = (JoypadView)view.findViewById(R.id.joypad);
+joypadView.setListener(new JoypadView.Listener() {
+    @Override
+    public void onUp() {
+        textView.setText(R.string.text_view_up);
+    }
+
+    @Override
+    public void onMove(final float distance, final float dx, final float dy) {
+        textView.setText(getString(R.string.text_view_move, distance, dx, dy));
+    }
+});
+```
+
+`distance` varies between `0f` and `1f` while `dx` and `dy` vary between `-1f` and `+1f`.
+
+One can configure inner circle color, outer circle color, moveable circle color and direction triangles color:
 
 ```xml
 <ninja.eigenein.joypad.JoypadView
@@ -27,7 +42,7 @@ You can configure inner circle color, outer circle color, moveable circle color 
     app:inner_color="@color/blue_800"/>
 ```
 
-You can also configure inner circle radius, outer circle width and moveable circle radius by setting `inner_radius`, `outer_width` and `moveable_radius` attributes.
+One can also configure inner circle radius, outer circle width and moveable circle radius by setting `inner_radius`, `outer_width` and `moveable_radius` attributes.
 
 ## License
 
