@@ -78,32 +78,32 @@ public class JoypadView extends View {
         final Resources resources = context.getResources();
 
         setupPaint(outerPaint, Paint.Style.STROKE, array.getColor(
-                R.styleable.JoypadView_outerColor,
+                R.styleable.JoypadView_outer_color,
                 resources.getColor(R.color.joypad_grey_50)
         ));
         setupPaint(innerPaint, Paint.Style.FILL, array.getColor(
-                R.styleable.JoypadView_innerColor,
+                R.styleable.JoypadView_inner_color,
                 resources.getColor(R.color.joypad_grey_500)
         ));
         setupPaint(moveablePaint, Paint.Style.FILL, array.getColor(
-                R.styleable.JoypadView_moveableColor,
+                R.styleable.JoypadView_moveable_color,
                 resources.getColor(R.color.joypad_grey_900)
         ));
         setupPaint(directionsPaint, Paint.Style.FILL, array.getColor(
-                R.styleable.JoypadView_directionsColor,
+                R.styleable.JoypadView_directions_color,
                 resources.getColor(R.color.joypad_grey_300)
         ));
 
         outerPaint.setStrokeWidth(array.getDimensionPixelSize(
-                R.styleable.JoypadView_outerWidth,
+                R.styleable.JoypadView_outer_width,
                 resources.getDimensionPixelSize(R.dimen.joypad_outer_width)
         ));
         innerRadius = array.getDimensionPixelSize(
-                R.styleable.JoypadView_innerRadius,
+                R.styleable.JoypadView_inner_radius,
                 resources.getDimensionPixelSize(R.dimen.joypad_inner_radius)
         );
         moveableRadius = array.getDimensionPixelSize(
-                R.styleable.JoypadView_moveableRadius,
+                R.styleable.JoypadView_moveable_radius,
                 resources.getDimensionPixelSize(R.dimen.joypad_moveable_radius)
         );
     }

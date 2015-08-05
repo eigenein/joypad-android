@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Joypad Demo</string>
+    <string name="menu_item_light">Light Theme</string>
+    <string name="menu_item_dark">Dark Theme</string>
 </resources>
