@@ -1,6 +1,6 @@
 # Joypad View Library for Android
 
-## Installation
+[![](https://img.shields.io/github/release/eigenein/joypad-android.svg?label=JitPack)](https://jitpack.io/#eigenein/joypad-android/)
 
 TODO
 
