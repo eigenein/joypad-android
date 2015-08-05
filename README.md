@@ -2,6 +2,8 @@
 
 `Joypad` view simulates a Joystick for interactive applications.
 
+![Light colors example](screenshot_light_small.png) ![](screenshot_dark_small.png)
+
 ## Using `JoypadView`
 
 ```xml
