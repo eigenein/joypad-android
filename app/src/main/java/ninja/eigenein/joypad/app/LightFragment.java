@@ -23,6 +23,7 @@ public class LightFragment extends Fragment {
 
         final JoypadView joypadView = (JoypadView)view.findViewById(R.id.joypad);
         joypadView.setListener(new JoypadView.Listener() {
+
             @Override
             public void onUp() {
                 textView.setText(R.string.text_view_up);
