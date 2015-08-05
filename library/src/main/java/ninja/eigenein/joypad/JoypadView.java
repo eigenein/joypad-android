@@ -6,6 +6,8 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PointF;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
@@ -16,11 +18,16 @@ import android.view.View;
  */
 public class JoypadView extends View {
 
+    private static final float SIN_30 = (float)Math.sin(Math.PI / 6.0);
+    private static final float PI = (float)Math.PI;
+    private static final float[] DIRECTIONS = {
+            0f, PI / 4f, 2f * PI / 4f, 3f * PI / 4f, PI, 5f * PI / 4f, 6f * PI / 4f, 7f * PI / 4f};
+
     private final Paint outerPaint = new Paint();
     private final Paint innerPaint = new Paint();
     private final Paint moveablePaint = new Paint();
+    private final Paint directionsPaint = new Paint();
 
-    private float outerWidth;
     private float innerRadius;
     private float moveableRadius;
 
@@ -42,6 +49,10 @@ public class JoypadView extends View {
                 R.styleable.JoypadView_moveableColor,
                 resources.getColor(R.color.joypad_grey_900)
         ));
+        setupPaint(directionsPaint, Paint.Style.FILL, array.getColor(
+                R.styleable.JoypadView_directionsColor,
+                resources.getColor(R.color.joypad_grey_300)
+        ));
 
         outerPaint.setStrokeWidth(array.getDimensionPixelSize(
                 R.styleable.JoypadView_outerWidth,
@@ -62,20 +73,48 @@ public class JoypadView extends View {
 
         final float width = getWidth();
         final float height = getHeight();
+        final float outerWidth = outerPaint.getStrokeWidth();
 
         // Draw outer arc.
-        final float outerOffset = outerPaint.getStrokeWidth() / 2.0f;
+        final float outerOffset = outerWidth / 2f;
         @SuppressLint("DrawAllocation") final RectF outerRect = new RectF(
                 outerOffset, outerOffset, width - outerOffset, height - outerOffset);
-        canvas.drawArc(outerRect, 0.0f, 360.0f, false, outerPaint);
+        canvas.drawArc(outerRect, 0.0f, 360f, false, outerPaint);
+
+        final float centerX = width / 2f;
+        final float centerY = height / 2f;
+
+        // Draw direction triangles.
+        final float triangleHeight = outerWidth / 2f;
+        final float offsetY = height / 2f - 3f * outerWidth / 4f;
+        final float offsetX = SIN_30 * outerWidth / 2f;
+        for (final float angle : DIRECTIONS) {
+            // We'll rotate vertices of triangle.
+            @SuppressLint("DrawAllocation") final Path path = new Path();
+            final PointF startPoint = rotatePoint(0f, offsetY + triangleHeight, angle);
+            path.moveTo(centerX + startPoint.x, centerY + startPoint.y);
+            final PointF leftPoint = rotatePoint(-offsetX, offsetY, angle);
+            path.lineTo(centerX + leftPoint.x, centerY + leftPoint.y);
+            final PointF rightPoint = rotatePoint(+offsetX, offsetY, angle);
+            path.lineTo(centerX + rightPoint.x, centerY + rightPoint.y);
+            path.close();
+
+            canvas.drawPath(path, directionsPaint);
+        }
 
         // Draw inner circle.
-        canvas.drawCircle(width / 2.0f, height / 2.0f, innerRadius, innerPaint);
+        canvas.drawCircle(centerX, centerY, innerRadius, innerPaint);
     }
 
     private static void setupPaint(final Paint paint, final Paint.Style style, final int color) {
         paint.setAntiAlias(true);
         paint.setStyle(style);
         paint.setColor(color);
+    }
+
+    private static PointF rotatePoint(final float x, final float y, final double angle) {
+        final float cos = (float)Math.cos(angle);
+        final float sin = (float)Math.sin(angle);
+        return new PointF(x * cos - y * sin, x * sin + y * cos);
     }
 }

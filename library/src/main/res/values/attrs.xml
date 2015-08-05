@@ -7,5 +7,6 @@
         <attr name="innerRadius" format="dimension"/>
         <attr name="moveableColor" format="color"/>
         <attr name="moveableRadius" format="dimension"/>
+        <attr name="directionsColor" format="color"/>
     </declare-styleable>
 </resources>
