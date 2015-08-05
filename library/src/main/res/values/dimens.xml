@@ -2,5 +2,5 @@
 <resources>
     <dimen name="joypad_outer_width">32dp</dimen>
     <dimen name="joypad_inner_radius">48dp</dimen>
-    <dimen name="joypad_moveable_radius">8dp</dimen>
+    <dimen name="joypad_moveable_radius">32dp</dimen>
 </resources>

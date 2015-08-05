@@ -1,5 +1,6 @@
 package ninja.eigenein.joypad;
 
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
@@ -11,6 +12,7 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 
 /**
@@ -19,17 +21,55 @@ import android.view.View;
 public class JoypadView extends View {
 
     private static final float SIN_30 = (float)Math.sin(Math.PI / 6.0);
-    private static final float PI = (float)Math.PI;
-    private static final float[] DIRECTIONS = {
-            0f, PI / 4f, 2f * PI / 4f, 3f * PI / 4f, PI, 5f * PI / 4f, 6f * PI / 4f, 7f * PI / 4f};
 
+    /**
+     * Pre-computed cos and sin for rotation.
+     */
+    private static final PointF[] ROTATION = {
+            new PointF(1f, 0f),
+            new PointF((float)Math.cos(0.25 * Math.PI), (float)Math.sin(0.25 * Math.PI)),
+            new PointF(0f, 1f),
+            new PointF((float)Math.cos(0.75 * Math.PI), (float)Math.sin(0.75 * Math.PI)),
+            new PointF(-1f, 0f),
+            new PointF((float)Math.cos(1.25 * Math.PI), (float)Math.sin(1.25 * Math.PI)),
+            new PointF(0f, -1f),
+            new PointF((float)Math.cos(1.75 * Math.PI), (float)Math.sin(1.75 * Math.PI)),
+    };
+
+    /**
+     * Used to draw the outer circle.
+     */
     private final Paint outerPaint = new Paint();
+    /**
+     * Used to draw the inner circle.
+     */
     private final Paint innerPaint = new Paint();
+    /**
+     * Used to draw the moveable circle.
+     */
     private final Paint moveablePaint = new Paint();
+    /**
+     * Used to draw the direction triangles.
+     */
     private final Paint directionsPaint = new Paint();
 
     private float innerRadius;
     private float moveableRadius;
+
+    /**
+     * Minimum of the view width and height.
+     */
+    private float minSizeDimension;
+
+    /**
+     * Maximum allowed moveable distance.
+     */
+    private float maxDistance;
+
+    private float moveableX;
+    private float moveableY;
+
+    private boolean animationCancelled = true;
 
     public JoypadView(final Context context, final AttributeSet attrs) {
         super(context, attrs);
@@ -68,42 +108,105 @@ public class JoypadView extends View {
         );
     }
 
+    @Override
+    public boolean onTouchEvent(@NonNull final MotionEvent event) {
+        switch (event.getAction()) {
+
+            case MotionEvent.ACTION_UP:
+                // Animate moving back to the center.
+                final float oldMoveableX = moveableX;
+                final float oldMoveableY = moveableY;
+                final ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+                animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(@NonNull final ValueAnimator animation) {
+                        if (animationCancelled) {
+                            animator.cancel();
+                            return;
+                        }
+                        final float value = (float)animator.getAnimatedValue();
+                        moveableX = (1f - value) * oldMoveableX + value * minSizeDimension / 2f;
+                        moveableY = (1f - value) * oldMoveableY + value * minSizeDimension / 2f;
+                        postInvalidate();
+                    }
+                });
+                animationCancelled = false;
+                animator.start();
+                return true;
+
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_MOVE:
+                // Cancel animation if any.
+                animationCancelled = true;
+
+                // Compute distance from the center.
+                final float offsetX = event.getX() - minSizeDimension / 2f;
+                final float offsetY = event.getY() - minSizeDimension / 2f;
+                final float distance = (float)Math.sqrt(offsetX * offsetX + offsetY * offsetY);
+
+                if (distance < maxDistance) {
+                    // Touched inside the outer circle.
+                    moveableX = event.getX();
+                    moveableY = event.getY();
+                } else {
+                    // Touched outside the outer circle.
+                    moveableX = minSizeDimension / 2f + maxDistance * offsetX / distance;
+                    moveableY = minSizeDimension / 2f + maxDistance * offsetY / distance;
+                }
+
+                postInvalidate();
+                return true;
+
+            default:
+                return super.onTouchEvent(event);
+        }
+    }
+
+    @Override
+    protected void onSizeChanged(final int width, final int height, final int oldWidth, final int oldHeight) {
+        minSizeDimension = Math.min(width, height);
+        maxDistance = minSizeDimension / 2f - moveableRadius;
+        moveableX = minSizeDimension / 2f;
+        moveableY = minSizeDimension / 2f;
+    }
+
+    @Override
     protected void onDraw(@NonNull final Canvas canvas) {
         super.onDraw(canvas);
 
-        final float width = getWidth();
-        final float height = getHeight();
         final float outerWidth = outerPaint.getStrokeWidth();
 
         // Draw outer arc.
         final float outerOffset = outerWidth / 2f;
         @SuppressLint("DrawAllocation") final RectF outerRect = new RectF(
-                outerOffset, outerOffset, width - outerOffset, height - outerOffset);
+                outerOffset, outerOffset, minSizeDimension - outerOffset, minSizeDimension - outerOffset);
         canvas.drawArc(outerRect, 0.0f, 360f, false, outerPaint);
 
-        final float centerX = width / 2f;
-        final float centerY = height / 2f;
+        final float center = minSizeDimension / 2f;
 
         // Draw direction triangles.
         final float triangleHeight = outerWidth / 2f;
-        final float offsetY = height / 2f - 3f * outerWidth / 4f;
+        final float offsetY = minSizeDimension / 2f - 3f * outerWidth / 4f;
         final float offsetX = SIN_30 * outerWidth / 2f;
-        for (final float angle : DIRECTIONS) {
+        for (final PointF rotation : ROTATION) {
             // We'll rotate vertices of triangle.
             @SuppressLint("DrawAllocation") final Path path = new Path();
-            final PointF startPoint = rotatePoint(0f, offsetY + triangleHeight, angle);
-            path.moveTo(centerX + startPoint.x, centerY + startPoint.y);
-            final PointF leftPoint = rotatePoint(-offsetX, offsetY, angle);
-            path.lineTo(centerX + leftPoint.x, centerY + leftPoint.y);
-            final PointF rightPoint = rotatePoint(+offsetX, offsetY, angle);
-            path.lineTo(centerX + rightPoint.x, centerY + rightPoint.y);
+            final PointF startPoint = rotatePoint(0f, offsetY + triangleHeight, rotation);
+            path.moveTo(center + startPoint.x, center + startPoint.y);
+            final PointF leftPoint = rotatePoint(-offsetX, offsetY, rotation);
+            path.lineTo(center + leftPoint.x, center + leftPoint.y);
+            final PointF rightPoint = rotatePoint(+offsetX, offsetY, rotation);
+            path.lineTo(center + rightPoint.x, center + rightPoint.y);
             path.close();
 
             canvas.drawPath(path, directionsPaint);
         }
 
         // Draw inner circle.
-        canvas.drawCircle(centerX, centerY, innerRadius, innerPaint);
+        canvas.drawCircle(center, center, innerRadius, innerPaint);
+
+        // Draw moveable.
+        canvas.drawCircle(moveableX, moveableY, moveableRadius, moveablePaint);
     }
 
     private static void setupPaint(final Paint paint, final Paint.Style style, final int color) {
@@ -112,9 +215,7 @@ public class JoypadView extends View {
         paint.setColor(color);
     }
 
-    private static PointF rotatePoint(final float x, final float y, final double angle) {
-        final float cos = (float)Math.cos(angle);
-        final float sin = (float)Math.sin(angle);
-        return new PointF(x * cos - y * sin, x * sin + y * cos);
+    private static PointF rotatePoint(final float x, final float y, final PointF rotation) {
+        return new PointF(x * rotation.x - y * rotation.y, x * rotation.y + y * rotation.x);
     }
 }

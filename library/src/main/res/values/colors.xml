@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="joypad_grey_50">#FAFAFA</color>
-    <color name="joypad_grey_200">#EEEEEE</color>
     <color name="joypad_grey_300">#E0E0E0</color>
     <color name="joypad_grey_500">#9E9E9E</color>
     <color name="joypad_grey_900">#212121</color>
