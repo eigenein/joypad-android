@@ -1,4 +1,4 @@
-# Joypad View Library for Android
+# Joypad View for Android
 
 [![](https://img.shields.io/github/release/eigenein/joypad-android.svg?label=JitPack)](https://jitpack.io/#eigenein/joypad-android/)
 
@@ -28,3 +28,5 @@ You can configure inner circle color, outer circle color, moveable circle color 
 ```
 
 You can also configure inner circle radius, outer circle width and moveable circle radius by setting `inner_radius`, `outer_width` and `moveable_radius` attributes.
+
+## License
