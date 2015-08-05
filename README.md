@@ -2,7 +2,7 @@
 
 `Joypad` view simulates a Joystick for interactive applications.
 
-![Light colors example](screenshot_light_small.png) ![](screenshot_dark_small.png)
+![Light colors example](store/screenshot_light_small.png) ![](store/screenshot_dark_small.png)
 
 ## Using `JoypadView`
 
