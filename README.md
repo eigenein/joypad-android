@@ -2,6 +2,10 @@
 
 `Joypad` view simulates a Joystick for interactive applications.
 
+## Demo
+
+[![](https://developer.android.com/images/brand/en_generic_rgb_wo_60.png)](https://play.google.com/store/apps/details?id=ninja.eigenein.joypad.app)
+
 ![Light colors example](store/screenshot_light_small.png) ![](store/screenshot_dark_small.png)
 
 ## Using `JoypadView`
