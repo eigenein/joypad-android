@@ -75,7 +75,7 @@ One can also configure inner circle radius, outer circle width and moveable circ
 ```
 The MIT License (MIT)
 
-Copyright (c) 2015 Pavel Perestoronin
+Copyright (c) 2015-2016 Pavel Perestoronin
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
