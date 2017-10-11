@@ -2,7 +2,7 @@
     <string name="app_name">Joypad Demo</string>
     <string name="menu_item_light">Light Theme</string>
     <string name="menu_item_dark">Dark Theme</string>
-    <string name="text_view_up">Up</string>
-    <string name="text_view_move">Distance: %1$.3f. Dx: %2$.3f. Dy: %3$.3f.</string>
+    <string name="text_view_up">No action\nLeft wheel: 0.00. Right wheel: 0.00.</string>
+    <string name="text_view_move">Distance: %1$.2f. Dx: %2$.2f. Dy: %3$.2f.\nLeft wheel: %4$.2f. Right wheel: %5$.2f.</string>
     <string name="text_view_touch">Touch joypad</string>
 </resources>

@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import ninja.eigenein.joypad.JoypadView;
+import ninja.eigenein.joypad.WheelsPower;
 
 public class LightFragment extends Fragment {
 
@@ -19,9 +20,9 @@ public class LightFragment extends Fragment {
             final Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_light, container, false);
 
-        final TextView textView = (TextView)view.findViewById(R.id.text_view);
+        final TextView textView = view.findViewById(R.id.text_view);
 
-        final JoypadView joypadView = (JoypadView)view.findViewById(R.id.joypad);
+        final JoypadView joypadView = view.findViewById(R.id.joypad);
         joypadView.setListener(new JoypadView.Listener() {
 
             @Override
@@ -31,7 +32,15 @@ public class LightFragment extends Fragment {
 
             @Override
             public void onMove(final float distance, final float dx, final float dy) {
-                textView.setText(getString(R.string.text_view_move, distance, dx, dy));
+                final WheelsPower wheelsPower = WheelsPower.wheelsPower(distance, dx, dy);
+                textView.setText(getString(
+                        R.string.text_view_move,
+                        distance,
+                        dx,
+                        dy,
+                        wheelsPower.getLeft(),
+                        wheelsPower.getRight())
+                );
             }
         });
 

@@ -1,7 +1,6 @@
 package ninja.eigenein.joypad;
 
 import android.animation.ValueAnimator;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -9,12 +8,10 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Picture;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -31,9 +28,9 @@ public class JoypadView extends View {
         void onUp();
 
         /**
-         * @param distance distance from the center. Varies from 0 up to 1.
-         * @param dx horizontal offset. Varies from -1 up to 1.
-         * @param dy vertical offset. Varies from -1 up to 1.
+         * @param distance Distance from the center. Varies from 0 up to 1.
+         * @param dx Horizontal offset. Varies from -1 up to 1.
+         * @param dy Vertical offset. Varies from -1 up to 1.
          */
         void onMove(final float distance, final float dx, final float dy);
     }
@@ -109,6 +106,7 @@ public class JoypadView extends View {
         final Resources resources = context.getResources();
 
         outerPaint.setStyle(Paint.Style.STROKE);
+        //noinspection deprecation
         outerPaint.setColor(array.getColor(
                 R.styleable.JoypadView_outer_color,
                 resources.getColor(R.color.joypad_grey_50)
@@ -119,19 +117,25 @@ public class JoypadView extends View {
         ));
 
         innerPaint.setStyle(Paint.Style.FILL);
+        //noinspection deprecation
         innerPaint.setColor(array.getColor(
                 R.styleable.JoypadView_inner_color,
                 resources.getColor(R.color.joypad_grey_500)
         ));
 
         moveablePaint.setStyle(Paint.Style.FILL);
+        //noinspection deprecation
         moveablePaint.setColor(array.getColor(
                 R.styleable.JoypadView_moveable_color,
                 resources.getColor(R.color.joypad_grey_900)
         ));
 
         directionsPaint.setStyle(Paint.Style.FILL);
-        directionsPaint.setColor(array.getColor(R.styleable.JoypadView_directions_color, resources.getColor(R.color.joypad_grey_300)));
+        //noinspection deprecation
+        directionsPaint.setColor(array.getColor(
+                R.styleable.JoypadView_directions_color,
+                resources.getColor(R.color.joypad_grey_300)
+        ));
 
         innerRadius = array.getDimensionPixelSize(
                 R.styleable.JoypadView_inner_radius,
