@@ -4,7 +4,7 @@
 
 ![Light colors example](store/screenshot_light_small.png) ![](store/screenshot_dark_small.png)
 
-## Get Demo
+## Demo
 
 [![](https://developer.android.com/images/brand/en_generic_rgb_wo_60.png)](https://play.google.com/store/apps/details?id=ninja.eigenein.joypad.app)
 
@@ -69,6 +69,15 @@ One can configure inner circle color, outer circle color, moveable circle color 
 ```
 
 One can also configure inner circle radius, outer circle width and moveable circle radius by setting `inner_radius`, `outer_width` and `moveable_radius` attributes.
+
+## `WheelsPower`
+
+There is the utility class `WheelsPower` that converts distance and offset into relative power for left and right wheels of some vehicle:
+
+```java
+final WheelsPower wheelsPower = WheelsPower.wheelsPower(distance, dx, dy);
+// wheelsPower.getLeft() and wheelsPower.getRight() vary from -1 to +1.
+```
 
 ## License
 
