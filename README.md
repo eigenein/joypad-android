@@ -23,7 +23,7 @@ Add the dependency:
 
 ```
 dependencies {
-    compile 'com.github.eigenein:joypad-android:0.4-4'
+    compile 'com.github.eigenein:joypad-android:5'
 }
 ```
 

@@ -10,7 +10,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
-import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -157,7 +156,7 @@ public class JoypadView extends View {
     }
 
     @Override
-    public boolean onTouchEvent(@NonNull final MotionEvent event) {
+    public boolean onTouchEvent(final MotionEvent event) {
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_UP:
@@ -168,7 +167,7 @@ public class JoypadView extends View {
                 moveableAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
 
                     @Override
-                    public void onAnimationUpdate(@NonNull final ValueAnimator animation) {
+                    public void onAnimationUpdate(final ValueAnimator animation) {
                         final float value = (float)moveableAnimator.getAnimatedValue();
                         moveablePoint = new PointF(
                                 (1f - value) * oldMoveablePoint.x + value * centerPoint,
@@ -226,7 +225,7 @@ public class JoypadView extends View {
     }
 
     @Override
-    protected void onDraw(@NonNull final Canvas canvas) {
+    protected void onDraw(final Canvas canvas) {
         super.onDraw(canvas);
 
         if ((cachedBitmap == null) || cachedBitmap.isRecycled()) {
